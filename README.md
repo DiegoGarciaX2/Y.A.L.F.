@@ -8,8 +8,8 @@ Repositorio para sigue lineas
 - SLC->A5
 - SDA->A4
 - Motor A(derecha):
- - C1->7
- - C2->8
+  - C1->7
+  - C2->8
 - Motor B(izquierda):
- - C1->2
- - C2->3
+  - C1->2
+  - C2->3
