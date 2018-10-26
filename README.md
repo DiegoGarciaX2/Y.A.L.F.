@@ -14,7 +14,7 @@ Repositorio para sigue lineas
   - int3->11
   - int4->10
   
-### El encoder de los motores es de siete pulsos
+#### El encoder de los motores es de siete pulsos
 
 ### Librerias necesarias:
   -https://github.com/br3ttb/Arduino-PID-Library/
