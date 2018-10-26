@@ -16,5 +16,5 @@ Repositorio para sigue lineas
   
 ### El encoder de los motores es de siete pulsos
 
-#### Librerias necesarias:
+### Librerias necesarias:
   -https://github.com/br3ttb/Arduino-PID-Library/
