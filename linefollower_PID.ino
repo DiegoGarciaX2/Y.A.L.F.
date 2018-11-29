@@ -4,17 +4,26 @@
 uchar t;
 int calib[8];
 uchar data[16];
+double Kpa, Kia=0, Kda=0, Kpb=0, Kib=0, Kdb=0, setpoint, va, vb, pos;
+PID motorA(&pos, &va, &setpoint, Kpa, Kia, Kda, DIRECT);
+PID motorB(&pos, &vb, &setpoint, Kpb, Kib, Kdb, DIRECT);
 
 void setup() {
   Wire.begin();
   Serial.begin(9600);
   calibrateSensors(calib);
+  motorA.SetMode(AUTOMATIC);
+  motorB.SetMode(AUTOMATIC);
+  setpoint = 0;
   t = 0;
 }
 void loop() {
   int sensor[8];
   getSensorValues(sensor);
   transformBinary(sensor, calib);
+  pos = linePos(sensor);
+  motorA.Compute();
+  motorB.Compute();
 }
 
 
@@ -92,5 +101,15 @@ void transformBinary(int sensor[], int calib[]) {
   for (int a = 0; a < 8; a++) {
     (sensor[a] > calib[a]) ? 1 : 0;
   }
+}
+
+int linePos(int sensor[]) {
+  int k;
+  for (int a = 0; a < 8; a++) {
+    if (sensor[a] == 1 && sensor[a + 1] == 1) {
+      k = a - 3;
+    }
+  }
+  return k;
 }
 
