@@ -13,6 +13,7 @@ Repositorio para sigue lineas
   - C2->3
   - int3->11
   - int4->10
+- LED ->4
   
 #### El encoder de los motores es de siete pulsos
 
