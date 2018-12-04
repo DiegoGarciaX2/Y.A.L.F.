@@ -2,13 +2,18 @@
 #include <PID_v1.h>
 #include <Wire.h>
 #define uchar unsigned char
+#define led 4
+#define strSpeed 255
+#define int1 6
+#define int2 5
+#define int3 11
+#define int4 10
 uchar t;
 int calib[8];
 uchar data[16];
-double setpoint, va, vb, pos;
-double Kpa = 0.25, Kia = 10, Kda = 5, Kpb = 0.25, Kib = 10, Kdb = 5;
-PID motorA(&pos, &va, &setpoint, Kpa, Kia, Kda, DIRECT);
-PID motorB(&pos, &vb, &setpoint, Kpb, Kib, Kdb, DIRECT);
+double setpoint, vchange, pos, strspeed = 255;
+double Kp = 0.25, Ki = 10, Kd = 5;
+PID motor(&pos, &vchange, &setpoint, Kp, Ki, Kd, DIRECT);
 Statistic highSens[8];
 Statistic lowSens[8];
 
@@ -18,8 +23,7 @@ void setup() {
   calibrateSensors(calib);
   setpoint = 0;
   pos = 0;
-  motorA.SetMode(AUTOMATIC);
-  motorB.SetMode(AUTOMATIC);
+  motor.SetMode(AUTOMATIC);
   t = 0;
   for (int a = 0; a < 8; a++) {
     highSens[a].clear();
@@ -29,19 +33,18 @@ void setup() {
 void loop() {
   int sensor[8];
   getSensorValues(sensor);
-  transformBinary(sensor, calib);
-  pos = linePos(sensor);
+  pos = linePos(sensor, calib);
   Serial.print("Position value: ");
   Serial.print(pos);
   Serial.println();
-  motorA.Compute();
+  motor.Compute();
   Serial.print("Speed motor A:  ");
-  Serial.print(va);
+  Serial.print(strSpeed + vchange);
   Serial.println();
-  motorB.Compute();
   Serial.print("Speed motor B:  ");
-  Serial.print(vb);
+  Serial.print(strSpeed - vchange);
   Serial.println();
+  motorSpeed();
 }
 
 
@@ -75,6 +78,7 @@ void calibrateSensors(int calibrationValues[]) {
   int sensor[8];
   int sensorLow[8];
   int sensorHigh[8];
+  digitalWrite(led, HIGH);
   getSensorValues(sensor);
   delay(1000);
   getSensorValues(sensor);
@@ -95,7 +99,7 @@ void calibrateSensors(int calibrationValues[]) {
       }
     }
     rep++;
-  } while (rep < 50);
+  } while (rep < 100);
 
   Serial.print("Sensor high: ");
   for (int a = 0; a < 8; a++) {
@@ -120,24 +124,33 @@ void calibrateSensors(int calibrationValues[]) {
   Serial.println();
 }
 
-void transformBinary(int sensor[], int calib[]) {
+int linePos(int sensor[], int calib[]) {
+  int sensorBinary[8];
+  int k;
   Serial.print("Sensor binary: ");
   for (int a = 0; a < 8; a++) {
-    sensor[a] = (sensor[a] > calib[a]) ? 0 : 1;
-    Serial.print(sensor[a]);
+    sensorBinary[a] = (sensor[a] > calib[a]) ? 0 : 1;
+    Serial.print(sensorBinary[a]);
     Serial.print("  ");
   }
   Serial.println();
-}
-
-int linePos(int sensor[]) {
-  int k;
+  digitalWrite(led, LOW);
   for (int a = 0; a < 8; a++) {
-    if (sensor[a] == 0 && sensor[a + 1] == 0) {
+    if (sensorBinary[a] == 0 && sensorBinary[a + 1] == 0) {
       k = a - 3;
+    }
+    else {
+      k = (sensor[a - 1] > sensor[a + 1]) ? a - 2 : a - 3;
     }
   }
   return k;
+}
+
+void motorSpeed() {
+  digitalWrite(int1, HIGH);
+  digitalWrite(int2, strspeed - vchange);
+  digitalWrite(int3, HIGH);
+  digitalWrite(int4, strspeed + vchange);
 }
 /*
   Statistic();    // constructor
